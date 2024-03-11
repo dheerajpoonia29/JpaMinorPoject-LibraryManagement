@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service;
 import com.jbdl.library.entity.BookEntity;
 import com.jbdl.library.entity.CardEntity;
 import com.jbdl.library.entity.TransEntity;
+import com.jbdl.library.model.request.BookRequest;
 import com.jbdl.library.model.request.TransRequest;
+import com.jbdl.library.repository.BookRepository;
 import com.jbdl.library.repository.TransRepository;
 
 @Service
@@ -43,20 +45,28 @@ public class TransService {
 			} catch(NoSuchElementException e) {
 				return "card not found";
 			}
-			TransEntity entity = new TransEntity(
-					0,
-					bookEntity,
-					cardEntity,
-					new Date(),
-					detail.getDueDate(),
-					false,
-					false,
-					0,
-					false,
-					new Date(),
-					null);
-			tr.save(entity);
-			return "transaction created";
+			if(bookEntity.getAvailable()==true) {
+				BookRequest bookRequest = new BookRequest();
+				bookRequest.setAvailable(false);
+				bookService.update(bookRequest, bookEntity.getId());
+				TransEntity entity = new TransEntity(
+						0,
+						bookEntity,
+						cardEntity,
+						new Date(),
+						detail.getDueDate(),
+						true,
+						false,
+						0,
+						false,
+						new Date(),
+						null);
+				tr.save(entity);
+				return "transaction created, book available";
+			} else {
+				return "transaction not created, book not available";
+			}
+			
 		} catch(Exception e) {
 			return "transaction not created, exception: "+e.getMessage();
 		}

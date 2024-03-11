@@ -52,8 +52,10 @@ public class BookService {
 		if(entity==null) {
 			return "Book not found";
 		}
-//		entity.setAge(detail.getAge()==0?entity.getAge():detail.getAge());
-		//todo
+		entity.setAvailable(detail.getAvailable()?detail.getAvailable():entity.getAvailable());
+		entity.setName(detail.getName()!=null?detail.getName():entity.getName());
+		entity.setGenre(detail.getGenre()!=null?detail.getGenre():entity.getGenre());
+		entity.setLanguage(detail.getLanguage()!=null?detail.getLanguage():entity.getLanguage());
 		br.save(entity);
 		return "Book updated";
 	}
