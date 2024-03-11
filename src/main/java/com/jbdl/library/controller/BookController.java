@@ -16,27 +16,29 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jbdl.library.entity.AuthorEntity;
+import com.jbdl.library.entity.BookEntity;
 import com.jbdl.library.model.request.AuthorRequest;
+import com.jbdl.library.model.request.BookRequest;
 import com.jbdl.library.model.response.AuthorResponse;
+import com.jbdl.library.model.response.BookResponse;
 import com.jbdl.library.model.response.MainResponse;
-import com.jbdl.library.model.response.Response;
-import com.jbdl.library.service.AuthorService;
+import com.jbdl.library.service.BookService;
 
 @RestController
-@RequestMapping("/author")
-public class AuthorController {
+@RequestMapping("/book")
+public class BookController {
 	@Autowired
-	AuthorService service;
+	BookService service;
 	
 	@GetMapping("/test")
 	public ResponseEntity<?> test() {
 		return new ResponseEntity<>(
-				new MainResponse("author api up", null), 
+				new MainResponse("book api up", null), 
 				HttpStatus.OK);
 	}
 	
 	@PostMapping("/create")
-	public ResponseEntity<?> create(@RequestBody AuthorRequest req) {
+	public ResponseEntity<?> create(@RequestBody BookRequest req) {
 		String msg = service.create(req);
 		return new ResponseEntity<>(
 				new MainResponse(msg, null), 
@@ -45,19 +47,31 @@ public class AuthorController {
 	
 	@GetMapping("/read")
 	public ResponseEntity<?> readAll() {
-		List<AuthorEntity> entities = service.readAll();
-		ArrayList<AuthorResponse> response =  new ArrayList<>();
+		List<BookEntity> entities = service.readAll();
+		ArrayList<BookResponse> response =  new ArrayList<>();
 		entities.forEach(entity -> {
-			response.add(new AuthorResponse(
+			AuthorEntity ae = entity.getAuthor();
+			AuthorResponse authorResponse = new AuthorResponse(
+					ae.getId(),
+					ae.getAge(),
+					ae.getName(),
+					ae.getCountry(),
+					ae.getEmail()
+					);
+			response.add(new BookResponse(
 					entity.getId(),
-					entity.getAge(),
 					entity.getName(),
-					entity.getCountry(),
-					entity.getEmail()));
+					entity.getTotalPage(),
+					entity.getLanguage(),
+					entity.getAvailable(),
+					entity.getGenre(),
+					entity.getIsbnNo(),
+					entity.getPublishedDate(),
+					authorResponse));
 		});
 		if(entities.isEmpty()) {
 			return new ResponseEntity<>(
-					new MainResponse("no author found", null), 
+					new MainResponse("no book found", null), 
 					HttpStatus.NOT_FOUND);
 		}
 		return new ResponseEntity<>(
@@ -67,27 +81,39 @@ public class AuthorController {
 	
 	@GetMapping("/read/{id}")
 	public ResponseEntity<?> readById(@PathVariable int id) {
-		AuthorResponse response;
+		BookResponse response;
 		try {
-			AuthorEntity entity = service.readById(id);
-			response = new AuthorResponse(
+			BookEntity entity = service.readById(id);
+			AuthorEntity ae = entity.getAuthor();
+			AuthorResponse authorResponse = new AuthorResponse(
+					ae.getId(),
+					ae.getAge(),
+					ae.getName(),
+					ae.getCountry(),
+					ae.getEmail()
+					);
+			response = new BookResponse(
 					entity.getId(),
-					entity.getAge(),
 					entity.getName(),
-					entity.getCountry(),
-					entity.getEmail());
+					entity.getTotalPage(),
+					entity.getLanguage(),
+					entity.getAvailable(),
+					entity.getGenre(),
+					entity.getIsbnNo(),
+					entity.getPublishedDate(),
+					authorResponse);
 		} catch (NullPointerException | java.util.NoSuchElementException e) {
 			return new ResponseEntity<>(
-					new MainResponse("Author not found", null), 
+					new MainResponse("Book not found", null), 
 					HttpStatus.OK);
 		}
 		return new ResponseEntity<>(
-				new MainResponse("Author found", response), 
+				new MainResponse("Book found", response), 
 				HttpStatus.OK);
 	}
 	
 	@PutMapping("/update/{id}")
-	public ResponseEntity<?> update(@PathVariable int id, @RequestBody AuthorRequest req) {
+	public ResponseEntity<?> update(@PathVariable int id, @RequestBody BookRequest req) {
 		String msg = service.update(req, id);
 		return new ResponseEntity<>(
 				new MainResponse(msg, null), 
@@ -96,7 +122,7 @@ public class AuthorController {
 	
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<?> delete(@PathVariable int id) {
-		String msg = service.delete(id);
+		String msg =  service.delete(id);
 		return new ResponseEntity<>(
 				new MainResponse(msg, null), 
 				HttpStatus.OK);
